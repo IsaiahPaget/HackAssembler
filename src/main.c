@@ -4,9 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "IOHelpers.h"
+#include "AssemblyTranslation.h"
 
 int main(int argc, char *argv[])
 {
+
 	// Make sure user enters correct number of arguments
 	if (argc != 2)
 	{
@@ -17,14 +19,9 @@ int main(int argc, char *argv[])
 	FILE* openedFile = OpenFile(argv[1]);
 	char** fileContents = ReadFile(openedFile);
 
-
-
-	for (int i = 0; *fileContents[i] != EOF; i++) 
-	{
-		printf("%s", fileContents[i]);
-	}
 	
-	size_t sizeOfArry = sizeof(fileContents) / sizeof(fileContents[0]);
+
+	int sizeOfArry = GetLength(fileContents);
 
 	// free all the dynamically made memory
 	for (size_t i = 0; i < sizeOfArry; i++)
@@ -32,6 +29,7 @@ int main(int argc, char *argv[])
 		free(fileContents[i]);
 	}
 	free(fileContents);
+//	free(code);
 
 	return 0; 
 }
