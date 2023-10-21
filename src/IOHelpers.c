@@ -45,18 +45,21 @@ char** ReadFile(FILE *file)
 		{
 			lines[total_lines] = malloc(MORE_CHARS); 
 		}
-		
-		// assign character to the current spot in array of strings
-		lines[total_lines][total_chars] = c;
-
-		// move onto next characterl
-		total_chars++;
+		if (c != ' ')
+		{
+			// assign character to the current spot in array of strings
+			lines[total_lines][total_chars] = c;
+	
+			// move onto next characterl
+			total_chars++;
+		}
 		
 		// if next line than reallocate new space for the terminator charactor to finish the strings
 		if (c == '\n')
 		{
-			lines[total_lines] = realloc(lines[total_lines], total_chars + 1);
-			lines[total_lines][total_chars] = '\0';
+
+			// replace new line with terminator
+			lines[total_lines][total_chars - 1] = '\0';
 			
 			// move onto the next line
 			total_lines++;

@@ -5,11 +5,7 @@
 #include <stdlib.h>
 
 // A or C instructions
-const TranslationMap A_INSTRUCTION = {"@", "0"};
 const TranslationMap C_INSTRUCTION = {"", "111"};
-
-const TranslationMap EQUALS_SIGN = {"=", "-1"};
-const TranslationMap COLON = {";", "-1"};
 
 // computation instructions
 const TranslationMap ZERO = {"0", "0101010"};
@@ -62,6 +58,29 @@ const TranslationMap NOT_EQUAL_TO_JUMP = {"JNE", "101"};
 const TranslationMap LESS_THAN_OR_EQUAL_TO_JUMP = {"JLE", "110"};
 const TranslationMap JUMP = {"JMP", "111"};
 
+char* GetBinaryFromInt(int num)
+{
+	char* bit;
+	int numBits = sizeof(num) * 8;
+	for (int i = numBits - 1; i >= 0; i--) 
+	{ // Iterate from the most significant bit to the least significant bit
+		bit = (num >> i) & 1; // Shift the bits to the right and perform bitwise AND with 1 to get the current bit
+	}
+	
+}
+
+int GetLengthOfString(char* string)
+{
+	int length = 0;
+	if (string != NULL)
+	{
+		while (string[length] != '\0')
+		{
+			length++;
+		}
+	}
+	return length;
+}
 int GetLength(char **array)
 {
 	if (array == NULL)
@@ -99,16 +118,40 @@ int* TranslateASM(char** code)
 		printf("Could not allocate memory for the binary code\n");
 		exit(1);
 	}
-
+	
+	// looping over all the lines of instruction
 	for (int total_lines = 0; total_lines < lengthOfCode; total_lines++)
 	{
-		if (code[total_lines][0] != '\n')
+		char currentBinaryInstruction[16];
+		
+		// only continue if line is NOT empty
+		if (code[total_lines][0] != '\0')
 		{
-			printf("%s", code[total_lines]);
+			printf("%s\n", code[total_lines]);
+			
+			// if A or B instruction  
 			if(code[total_lines][0] == '@')
 			{
 				printf("A instruction\n");
-			} else {
+
+				// move a instruction flag into the first part of the binary instruction
+				currentBinaryInstruction[0] = '0';
+
+				// get a buffer for the integer that is after the @
+				char address[GetLengthOfString(code[total_lines]) - 1];
+				int indexOfChar	= 1;
+				
+				// move the value into the buffer
+				while (code[total_lines][indexOfChar] != '\0')
+				{
+					address[indexOfChar - 1] = code[total_lines][indexOfChar]; 	
+					indexOfChar++;
+				}
+				address[indexOfChar - 1] = '\0';
+
+					
+			} else 
+			{
 				printf("C instruction\n");
 			}
 		}
