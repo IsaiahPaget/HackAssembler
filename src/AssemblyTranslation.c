@@ -58,16 +58,41 @@ const TranslationMap NOT_EQUAL_TO_JUMP = {"JNE", "101"};
 const TranslationMap LESS_THAN_OR_EQUAL_TO_JUMP = {"JLE", "110"};
 const TranslationMap JUMP = {"JMP", "111"};
 
-char* GetBinaryFromInt(int num)
-{
-	char* bit;
-	int numBits = sizeof(num) * 8;
-	for (int i = numBits - 1; i >= 0; i--) 
-	{ // Iterate from the most significant bit to the least significant bit
-		bit = (num >> i) & 1; // Shift the bits to the right and perform bitwise AND with 1 to get the current bit
+
+
+char* intToBinary(int n) {
+	char* binary = malloc(16 * sizeof(char));
+    	if (binary == NULL)
+	{
+		printf("Could not allocate memory to turn intToBinary code\n");
+		exit(1);
 	}
+    	int i = 0;
+    	for (int bit = 1 << 14; bit > 0; bit = bit / 2) {
+    	    if ((n & bit) != 0) {
+    	        binary[i] = '1';
+    	    } else {
+    	        binary[i] = '0';
+    	    }
+    	    i++;
+    	}
+    	binary[i] = '\0';
 	
+	i = 1;
+	while (binary[i] == '0')
+	{
+		i++;
+	}
+	int lengthOfBinary = 16 - (i + 1);
+	
+	for (int indexOfBinary = 15; indexOfBinary == 16 - lengthOfBinary; indexOfBinary--)
+	{
+		// TODO		
+	}
+
+    	return binary;
 }
+
 
 int GetLengthOfString(char* string)
 {
@@ -85,7 +110,7 @@ int GetLength(char **array)
 {
 	if (array == NULL)
 	{
-		printf("Cannot get length: array equals null");
+		printf("Cannot get length: array equals null\n");
 		exit(1);
 	}
 
@@ -149,7 +174,26 @@ int* TranslateASM(char** code)
 				}
 				address[indexOfChar - 1] = '\0';
 
-					
+				int newAddress = atoi(address);
+
+				char* binaryAddress = intToBinary(newAddress);
+				
+				indexOfChar = 0;
+				int indexOfBinaryInstruction = 1;
+
+				while(binaryAddress[indexOfChar] != '\0')
+				{
+					if (indexOfBinaryInstruction > 15)
+					{
+						printf("Error A instruction too large\n");
+						exit(1);
+					}
+					printf("%c\n",binaryAddress[indexOfChar]);
+					currentBinaryInstruction[indexOfBinaryInstruction] = binaryAddress[indexOfChar];
+					indexOfChar++;
+					indexOfBinaryInstruction++;
+				}
+				printf("%s\n", currentBinaryInstruction);
 			} else 
 			{
 				printf("C instruction\n");

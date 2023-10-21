@@ -5,3 +5,4 @@ typedef struct {
 int GetLengthOfString(char* string);
 int GetLength(char** array);
 int* TranslateASM(char** code);
+char* intToBinary(int n);
