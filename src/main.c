@@ -20,16 +20,17 @@ int main(int argc, char *argv[])
 	char** fileContents = ReadFile(openedFile);
 
 	
+	int* code = TranslateASM(fileContents);
 
-	int sizeOfArry = GetLength(fileContents);
+	//int sizeOfArry = GetLength(fileContents);
 
-	// free all the dynamically made memory
-	for (size_t i = 0; i < sizeOfArry; i++)
-	{
-		free(fileContents[i]);
-	}
+	//// free all the dynamically made memory
+	//for (size_t i = 0; i < sizeOfArry; i++)
+	//{
+	//	free(fileContents[i]);
+	//}
 	free(fileContents);
-//	free(code);
+	//free(code);
 
 	return 0; 
 }

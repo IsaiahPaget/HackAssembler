@@ -49,7 +49,7 @@ char** ReadFile(FILE *file)
 		// assign character to the current spot in array of strings
 		lines[total_lines][total_chars] = c;
 
-		// move onto next character
+		// move onto next characterl
 		total_chars++;
 		
 		// if next line than reallocate new space for the terminator charactor to finish the strings
@@ -82,7 +82,6 @@ char** ReadFile(FILE *file)
 		lines[total_lines] = realloc(lines[total_lines], total_chars + 1);
 		lines[total_lines][total_chars] = '\0';
 		
-		// move onto the next line
 		total_lines++;
 	}
 

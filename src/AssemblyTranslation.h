@@ -1,6 +1,6 @@
 typedef struct {
-	char *asmCode;
-	int binary;
+	char* asmCode;
+	char* binary;
 } TranslationMap;
 
 int GetLength(char** array);
