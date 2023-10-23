@@ -59,37 +59,35 @@ const TranslationMap LESS_THAN_OR_EQUAL_TO_JUMP = {"JLE", "110"};
 const TranslationMap JUMP = {"JMP", "111"};
 
 
-
 char* intToBinary(int n) {
+
 	char* binary = malloc(16 * sizeof(char));
+
     	if (binary == NULL)
 	{
 		printf("Could not allocate memory to turn intToBinary code\n");
 		exit(1);
 	}
+	
+	// putting the binary representation into a string that looks like this 0000100101010101
     	int i = 0;
-    	for (int bit = 1 << 14; bit > 0; bit = bit / 2) {
-    	    if ((n & bit) != 0) {
-    	        binary[i] = '1';
-    	    } else {
-    	        binary[i] = '0';
-    	    }
-    	    i++;
+    	for (int bit = 1 << 15; bit > 0; bit = bit / 2) {
+		if (i > 16)
+		{
+			printf("Error A instruction too large\n");
+			exit(1);
+		}
+		if ((n & bit) != 0) 
+		{
+			binary[i] = '1';
+		} else 
+		{
+			binary[i] = '0';
+		}
+		i++;
     	}
     	binary[i] = '\0';
-	
-	i = 1;
-	while (binary[i] == '0')
-	{
-		i++;
-	}
-	int lengthOfBinary = 16 - (i + 1);
-	
-	for (int indexOfBinary = 15; indexOfBinary == 16 - lengthOfBinary; indexOfBinary--)
-	{
-		// TODO		
-	}
-
+	printf("from intToBinary: %s\n", binary);	
     	return binary;
 }
 
@@ -147,7 +145,7 @@ int* TranslateASM(char** code)
 	// looping over all the lines of instruction
 	for (int total_lines = 0; total_lines < lengthOfCode; total_lines++)
 	{
-		char currentBinaryInstruction[16];
+		char currentBinaryInstruction[17];
 		
 		// only continue if line is NOT empty
 		if (code[total_lines][0] != '\0')
@@ -173,31 +171,29 @@ int* TranslateASM(char** code)
 					indexOfChar++;
 				}
 				address[indexOfChar - 1] = '\0';
-
-				int newAddress = atoi(address);
-
-				char* binaryAddress = intToBinary(newAddress);
 				
-				indexOfChar = 0;
-				int indexOfBinaryInstruction = 1;
-
-				while(binaryAddress[indexOfChar] != '\0')
+				/* putting the value into the current instruction
+				 * the indexes are at 1 because the A instruction bit is already
+				 * at currentBinaryInstruction[0]
+				*/
+				int newAddress = atoi(address);
+				char* binaryAddress = intToBinary(newAddress);
+				int indexInCurrentInstruction = 1;
+				for (int i = 1; binaryAddress[i] != '\0'; i++)
 				{
-					if (indexOfBinaryInstruction > 15)
+					if (indexInCurrentInstruction < 16)
 					{
-						printf("Error A instruction too large\n");
-						exit(1);
+                                          currentBinaryInstruction[indexInCurrentInstruction] = binaryAddress[i];
+                                          indexInCurrentInstruction++;
 					}
-					printf("%c\n",binaryAddress[indexOfChar]);
-					currentBinaryInstruction[indexOfBinaryInstruction] = binaryAddress[indexOfChar];
-					indexOfChar++;
-					indexOfBinaryInstruction++;
 				}
-				printf("%s\n", currentBinaryInstruction);
-			} else 
+				currentBinaryInstruction[16] = '\0';
+			} 
+			else 
 			{
 				printf("C instruction\n");
 			}
+			printf("did the instruction\n");
 		}
 	}
 	
