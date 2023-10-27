@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 
 	FILE* openedFile = OpenFile(argv[1]);
 	char** fileContents = ReadFile(openedFile);
-
 	
 	int* code = TranslateASM(fileContents);
 

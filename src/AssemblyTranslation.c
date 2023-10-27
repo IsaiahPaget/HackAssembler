@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 // A or C instructions
 const TranslationMap C_INSTRUCTION = {"", "111"};
@@ -58,10 +59,88 @@ const TranslationMap NOT_EQUAL_TO_JUMP = {"JNE", "101"};
 const TranslationMap LESS_THAN_OR_EQUAL_TO_JUMP = {"JLE", "110"};
 const TranslationMap JUMP = {"JMP", "111"};
 
+void TranslateDestination(int total_lines, char* currentBinaryInstruction, char** code)
+{
+	int indexOfDestinationInstruction = 10;
+	char destination[GetLengthOfString(code[total_lines])];
+	int indexOfChar = 0;
+	while (code[total_lines][indexOfChar] != '=')
+	{
+		destination[indexOfChar] = code[total_lines][indexOfChar];
+		indexOfChar++;
+	}
+	destination[indexOfChar] = '\0';
+	printf("the destination: %s\n", destination);
 
-char* intToBinary(int n) {
+	TranslationMap destinations[] = {NULL_DESTINATION, M_DESTINATION, D_DESTINATION, MD_DESTINATION, A_DESTINATION, AM_DESTINATION, AD_DESTINATION, AMD_DESTINATION}; 
+	for (int i = 0; i < 8; i++)
+	{
+		if(strcmp(destinations[i].asmCode, destination) == 0)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				currentBinaryInstruction[indexOfDestinationInstruction] = destinations[i].binary[j];
+				indexOfDestinationInstruction++;
+			}
+		}
+	}
+}
 
-	char* binary = malloc(16 * sizeof(char));
+void TranslateCInstruction(int total_lines, char* currentBinaryInstruction, char** code)
+{
+	// to keep track of what part of the currentBinaryInstruction has been already translated
+	int indexOfFinishedTranslation = 0;
+
+	// set the first three bits to 111
+	for (int i = 0; i < 3; i++)
+	{
+		currentBinaryInstruction[i] = '1';
+		indexOfFinishedTranslation++;
+	}
+
+	TranslateDestination(total_lines, currentBinaryInstruction, code);
+}
+
+void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char** code)
+{
+	// move a instruction flag into the first part of the binary instruction
+	currentBinaryInstruction[0] = '0';
+
+	// get a buffer for the integer that is after the @
+	char address[GetLengthOfString(code[total_lines]) - 1];
+	int indexOfChar	= 1;
+				
+	// move the value into the buffer
+	while (code[total_lines][indexOfChar] != '\0')
+	{
+		address[indexOfChar - 1] = code[total_lines][indexOfChar]; 	
+		indexOfChar++;
+	}
+	printf("lengthOfaddress: %d\n", indexOfChar);
+	address[indexOfChar - 1] = '\0';
+				
+	/* putting the value into the current instruction
+	* the indexes are at 1 because the A instruction bit is already
+	* at currentBinaryInstruction[0]
+	*/
+	char binaryAddress[17];
+	int newAddress = atoi(address);
+	intToBinary(newAddress, binaryAddress);
+	int indexInCurrentInstruction = 1;
+	for (int i = 1; binaryAddress[i] != '\0'; i++)
+	{
+		if (indexInCurrentInstruction < 16)
+		{
+                        currentBinaryInstruction[indexInCurrentInstruction] = binaryAddress[i];
+                        indexInCurrentInstruction++;
+		}
+	}
+	currentBinaryInstruction[16] = '\0';
+	printf("binary instruction: %s\n", currentBinaryInstruction);
+
+}
+
+void intToBinary(int n, char* binary) {
 
     	if (binary == NULL)
 	{
@@ -87,8 +166,6 @@ char* intToBinary(int n) {
 		i++;
     	}
     	binary[i] = '\0';
-	printf("from intToBinary: %s\n", binary);	
-    	return binary;
 }
 
 
@@ -145,7 +222,7 @@ int* TranslateASM(char** code)
 	// looping over all the lines of instruction
 	for (int total_lines = 0; total_lines < lengthOfCode; total_lines++)
 	{
-		char currentBinaryInstruction[17];
+		char currentBinaryInstruction[] = "0000000000000000";
 		
 		// only continue if line is NOT empty
 		if (code[total_lines][0] != '\0')
@@ -156,42 +233,13 @@ int* TranslateASM(char** code)
 			if(code[total_lines][0] == '@')
 			{
 				printf("A instruction\n");
-
-				// move a instruction flag into the first part of the binary instruction
-				currentBinaryInstruction[0] = '0';
-
-				// get a buffer for the integer that is after the @
-				char address[GetLengthOfString(code[total_lines]) - 1];
-				int indexOfChar	= 1;
-				
-				// move the value into the buffer
-				while (code[total_lines][indexOfChar] != '\0')
-				{
-					address[indexOfChar - 1] = code[total_lines][indexOfChar]; 	
-					indexOfChar++;
-				}
-				address[indexOfChar - 1] = '\0';
-				
-				/* putting the value into the current instruction
-				 * the indexes are at 1 because the A instruction bit is already
-				 * at currentBinaryInstruction[0]
-				*/
-				int newAddress = atoi(address);
-				char* binaryAddress = intToBinary(newAddress);
-				int indexInCurrentInstruction = 1;
-				for (int i = 1; binaryAddress[i] != '\0'; i++)
-				{
-					if (indexInCurrentInstruction < 16)
-					{
-                                          currentBinaryInstruction[indexInCurrentInstruction] = binaryAddress[i];
-                                          indexInCurrentInstruction++;
-					}
-				}
-				currentBinaryInstruction[16] = '\0';
+				TranslateAInstruction(total_lines, currentBinaryInstruction, code);
 			} 
 			else 
 			{
 				printf("C instruction\n");
+				TranslateCInstruction(total_lines, currentBinaryInstruction, code);
+				printf("the currentbinaryinstruction: %s\n", currentBinaryInstruction);
 			}
 			printf("did the instruction\n");
 		}

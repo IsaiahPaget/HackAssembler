@@ -1,4 +1,4 @@
 @100
-D=M
-D = D + 1
-A = M
+null=M
+AM = D + 1
+AMD = M
