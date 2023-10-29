@@ -2,6 +2,19 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "IOHelpers.h"
+int indexOfCharacter(char* string, char character)
+{
+	int index;
+	for (int i = 0; string[i] != character; i++)
+	{
+		if (string[i] == '\0')
+		{
+			index = 0;
+		}
+		index = i;
+	}
+	return index;	
+}
 
 FILE* OpenFile(char* filePath) 
 {

@@ -9,4 +9,4 @@
 */ 
 char** ReadFile(FILE *file);
 FILE* OpenFile(char *filePath);
-
+int indexOfCharacter(char* string, char character);
