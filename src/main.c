@@ -5,6 +5,7 @@
 #include <string.h>
 #include "IOHelpers.h"
 #include "AssemblyTranslation.h"
+#include "StringArray.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,19 +18,26 @@ int main(int argc, char *argv[])
 	}
 
 	FILE* openedFile = OpenFile(argv[1]);
-	char** fileContents = ReadFile(openedFile);
-	
-	int* code = TranslateASM(fileContents);
 
-	int sizeOfArry = GetLength(fileContents);
+	StringArray fileContents = ReadFile(openedFile);
+	
+	StringArray code = TranslateASM(fileContents.pContents);
+
+	FILE* createdFile = CreateFile();
+	WriteFile(createdFile, code);
+
+	fclose(createdFile);
+
+	int sizeOfArry = fileContents.length;
 
 	// free all the dynamically made memory
 	for (size_t i = 0; i < sizeOfArry; i++)
 	{
-		free(fileContents[i]);
+		free(fileContents.pContents[i]);
+		free(code.pContents[i]);
 	}
-	free(fileContents);
-	free(code);
+	free(fileContents.pContents);
+	free(code.pContents);
 
 	return 0; 
 }

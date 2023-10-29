@@ -66,7 +66,7 @@ void PutBinaryInCurrentBinaryInstruction(TranslationMap* translateMap, int lengt
 	{
 		if(strcmp(translateMap[i].asmCode, stringToTranslate) == 0)
 		{
-			for (int j = 0; j < 3; j++)
+			for (int j = 0; j < GetLengthOfString(translateMap[i].binary) ; j++)
 			{
 				currentBinaryInstruction[indexOfInstruction] = translateMap[i].binary[j];
 				indexOfInstruction++;
@@ -78,17 +78,16 @@ void PutBinaryInCurrentBinaryInstruction(TranslationMap* translateMap, int lengt
 void PopulateArrayForTranslation(char** code, char* instruction, int total_lines, int indexToStartParsing, char wherePartOfInstructionEnds)
 {
 	int indexOfChar = indexToStartParsing;
-	if (indexOfChar > 0)
-	{
-		
-	}
+	int i = 0;
 	while (code[total_lines][indexOfChar] != wherePartOfInstructionEnds)
 	{
-		instruction[indexOfChar] = code[total_lines][indexOfChar];
+		if(code[total_lines][indexOfChar] == '\0')
+			break;
+		instruction[i] = code[total_lines][indexOfChar];
 		indexOfChar++;
+		i++;
 	}
-	instruction[indexOfChar] = '\0';
-	printf("the instruction %s\n", instruction);
+	instruction[i] = '\0';
 }
 
 void TranslateDestination(int total_lines, char* currentBinaryInstruction, char** code)
@@ -114,7 +113,7 @@ void TranslateDestination(int total_lines, char* currentBinaryInstruction, char*
 
 void TranslateCompute(int total_lines, char* currentBinaryInstruction, char** code)
 {
-	int indexAfterEquals = indexOfCharacter(code[total_lines], '=') + 1;
+	int indexAfterEquals = indexOfCharacter(code[total_lines], '=') + 2;
 	int indexOfComputeInstruction = 3;
 	char compute[GetLengthOfString(code[total_lines])];
 	PopulateArrayForTranslation(code, compute, total_lines, indexAfterEquals, ';');
@@ -154,6 +153,32 @@ void TranslateCompute(int total_lines, char* currentBinaryInstruction, char** co
 	PutBinaryInCurrentBinaryInstruction(computeInstructions, lengthOfTranslationMap, compute, currentBinaryInstruction, indexOfComputeInstruction);
 }
 
+void TranslateJump(int total_lines, char* currentBinaryInstruction, char** code)
+{
+	int indexAfterSemicolon = indexOfCharacter(code[total_lines], ';') + 2;
+	if (indexAfterSemicolon < 0)
+	{
+		return;	
+	}
+
+	int indexOfJumpInstruction = 13;
+	char jump[GetLengthOfString(code[total_lines])];
+	PopulateArrayForTranslation(code, jump, total_lines, indexAfterSemicolon, '\0');
+
+	TranslationMap jumpInstructions[] = {
+		NULL_JUMP,
+		GREATER_THAN_JUMP,
+		EQUAL_TO_JUMP,
+		GREATER_THAN_OR_EQUAL_TO_JUMP,
+		LESS_THAN_JUMP,
+		NOT_EQUAL_TO_JUMP,
+		LESS_THAN_OR_EQUAL_TO_JUMP,
+		JUMP
+	};
+
+	int lengthOfTranslationMap = sizeof(jumpInstructions) / sizeof(jumpInstructions[0]);
+	PutBinaryInCurrentBinaryInstruction(jumpInstructions, lengthOfTranslationMap, jump, currentBinaryInstruction, indexOfJumpInstruction);
+}
 void TranslateCInstruction(int total_lines, char* currentBinaryInstruction, char** code)
 {
 	// to keep track of what part of the currentBinaryInstruction has been already translated
@@ -168,6 +193,7 @@ void TranslateCInstruction(int total_lines, char* currentBinaryInstruction, char
 
 	TranslateDestination(total_lines, currentBinaryInstruction, code);
 	TranslateCompute(total_lines, currentBinaryInstruction, code);
+	TranslateJump(total_lines, currentBinaryInstruction, code);
 }
 
 void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char** code)
@@ -185,7 +211,6 @@ void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char
 		address[indexOfChar - 1] = code[total_lines][indexOfChar]; 	
 		indexOfChar++;
 	}
-	printf("lengthOfaddress: %d\n", indexOfChar);
 	address[indexOfChar - 1] = '\0';
 				
 	/* putting the value into the current instruction
@@ -205,8 +230,6 @@ void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char
 		}
 	}
 	currentBinaryInstruction[16] = '\0';
-	printf("binary instruction: %s\n", currentBinaryInstruction);
-
 }
 
 void intToBinary(int n, char* binary) {
@@ -259,8 +282,7 @@ int GetLength(char **array)
 	}
 
 	int length = 0;
-
-	while(*array[length] != EOF)
+	while(array[length][0] != EOF)
 	{
 		length++;
 	}
@@ -268,7 +290,7 @@ int GetLength(char **array)
 }
 
 // functions that translates
-int* TranslateASM(char** code) 
+StringArray TranslateASM(char** code) 
 {
 	if (code == NULL)
 	{
@@ -278,9 +300,7 @@ int* TranslateASM(char** code)
 	
 	int lengthOfCode = GetLength(code);
 
-	printf("length of code: %d\n", lengthOfCode);
-
-	int *binary = malloc(sizeof(int) * lengthOfCode);
+	char** binary = malloc(sizeof(char*) * lengthOfCode + 1);
 	
 	if (binary == NULL)
 	{
@@ -308,11 +328,24 @@ int* TranslateASM(char** code)
 			{
 				printf("C instruction\n");
 				TranslateCInstruction(total_lines, currentBinaryInstruction, code);
-				printf("the currentbinaryinstruction: %s\n", currentBinaryInstruction);
 			}
-			printf("did the instruction\n");
+
+			binary[total_lines] = malloc(17 * sizeof(char));
+			
+			if (binary[total_lines] == NULL)
+        		{
+        		    printf("Could not allocate memory for binary instruction\n");
+        		    exit(1);
+        		}
+
+        		strcpy(binary[total_lines], currentBinaryInstruction);
 		}
+		printf("binary[total_lines] = %s\n\n", binary[total_lines]);
 	}
+
+	StringArray result;
+	result.pContents = binary;
+	result.length = lengthOfCode; 
 	
-	return binary;
+	return result;
 }
