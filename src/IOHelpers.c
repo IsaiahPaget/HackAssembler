@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include "IOHelpers.h"
 #include "AssemblyTranslation.h"
 #include "StringArray.h"
@@ -41,11 +42,21 @@ FILE* OpenFile(char* filePath)
 }
 
 
-FILE* CreateFile() 
+FILE* CreateFile(char* filePath) 
 {
 	printf("Initiate CreateFile\n");
+	int index = indexOfCharacter(filePath, '.');
+
+	if (index < 1)
+	{
+		printf("Usage ./HackAssembler example.asm");
+		exit(1);
+	}
+
+	filePath[index + 1] = '\0';
+
 	FILE* fptr;
-	fptr = fopen("binary.txt", "a");
+	fptr = fopen(strcat(filePath, ".hack"), "a");
 
 	if (fptr == NULL)
 	{

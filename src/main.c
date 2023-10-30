@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 	
 	StringArray code = TranslateASM(fileContents.pContents);
 
-	FILE* createdFile = CreateFile();
+	FILE* createdFile = CreateFile(argv[1]);
 	WriteFile(createdFile, code);
 
 	fclose(createdFile);

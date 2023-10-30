@@ -10,6 +10,6 @@
 */ 
 StringArray ReadFile(FILE *file);
 FILE* OpenFile(char *filePath);
-FILE* CreateFile();
+FILE* CreateFile(char *filePath);
 void WriteFile(FILE* file, StringArray code);
 int indexOfCharacter(char* string, char character);

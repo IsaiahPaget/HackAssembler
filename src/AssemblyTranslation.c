@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include "IOHelpers.h"
 
 // A or C instructions
@@ -20,7 +21,7 @@ const TranslationMap NOT_A = {"!A", "0110001"};
 const TranslationMap MINUS_A = {"-A", "0110011"};
 const TranslationMap MINUS_D = {"-D", "0001111"};
 const TranslationMap D_PLUS_ONE = {"D+1", "0011111"};
-const TranslationMap A_PLUS_ONE = {"A+1", "0110001"};
+const TranslationMap A_PLUS_ONE = {"A+1", "0110111"};
 const TranslationMap D_MINUS_ONE = {"D-1", "0001110"};
 const TranslationMap A_MINUS_ONE = {"A-1", "0110010"};
 const TranslationMap D_PLUS_A = {"D+A", "0000010"};
@@ -43,7 +44,7 @@ const TranslationMap D_OR_M = {"D|M", "1010101"};
 const TranslationMap NULL_DESTINATION = {"null", "000"};
 const TranslationMap M_DESTINATION = {"M", "001"};
 const TranslationMap D_DESTINATION = {"D", "010"};
-const TranslationMap MD_DESTINATION = {"DM", "011"};
+const TranslationMap MD_DESTINATION = {"MD", "011"};
 const TranslationMap A_DESTINATION = {"A", "100"};
 const TranslationMap AM_DESTINATION = {"AM", "101"};
 const TranslationMap AD_DESTINATION = {"AD", "110"};
@@ -64,7 +65,7 @@ void PutBinaryInCurrentBinaryInstruction(TranslationMap* translateMap, int lengt
 
 	for (int i = 0; i < lengthOfTranslationMap; i++)
 	{
-		if(strcmp(translateMap[i].asmCode, stringToTranslate) == 0)
+		if(strcasecmp(translateMap[i].asmCode, stringToTranslate) == 0)
 		{
 			for (int j = 0; j < GetLengthOfString(translateMap[i].binary) ; j++)
 			{
@@ -92,6 +93,11 @@ void PopulateArrayForTranslation(char** code, char* instruction, int total_lines
 
 void TranslateDestination(int total_lines, char* currentBinaryInstruction, char** code)
 {
+	int indexOfEquals = indexOfCharacter(code[total_lines], '=');
+	if (indexOfEquals < 0)
+	{
+		return;
+	}
 	int indexOfDestinationInstruction = 10;
 	char destination[GetLengthOfString(code[total_lines])];
 	PopulateArrayForTranslation(code, destination, total_lines, 0, '=');
@@ -113,7 +119,16 @@ void TranslateDestination(int total_lines, char* currentBinaryInstruction, char*
 
 void TranslateCompute(int total_lines, char* currentBinaryInstruction, char** code)
 {
-	int indexAfterEquals = indexOfCharacter(code[total_lines], '=') + 2;
+	int indexAfterEquals = indexOfCharacter(code[total_lines], '=');
+	if (indexAfterEquals < 0)
+	{
+		indexAfterEquals = 0;
+	}
+	else 
+	{
+		indexAfterEquals += 2;	
+	}
+	printf("indexAfterEquals %d\n",indexAfterEquals);
 	int indexOfComputeInstruction = 3;
 	char compute[GetLengthOfString(code[total_lines])];
 	PopulateArrayForTranslation(code, compute, total_lines, indexAfterEquals, ';');
@@ -155,10 +170,14 @@ void TranslateCompute(int total_lines, char* currentBinaryInstruction, char** co
 
 void TranslateJump(int total_lines, char* currentBinaryInstruction, char** code)
 {
-	int indexAfterSemicolon = indexOfCharacter(code[total_lines], ';') + 2;
+	int indexAfterSemicolon = indexOfCharacter(code[total_lines], ';');
 	if (indexAfterSemicolon < 0)
 	{
 		return;	
+	}
+	else 
+	{
+		indexAfterSemicolon += 2;	
 	}
 
 	int indexOfJumpInstruction = 13;
