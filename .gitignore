@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# asm and hack files
+*.asm
+*.hack
 # Object files
 *.o
 *.ko
