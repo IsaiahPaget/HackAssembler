@@ -1,14 +1,12 @@
 #include "AssemblyTranslation.h"
-#include <stddef.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include "IOHelpers.h"
+#include "Helpers.h"
+#include "TranslationMap.h"
 
-// A or C instructions
-const TranslationMap C_INSTRUCTION = {"", "111"};
 
 // computation instructions
 const TranslationMap ZERO = {"0", "0101010"};
@@ -128,7 +126,7 @@ void TranslateCompute(int total_lines, char* currentBinaryInstruction, char** co
 	{
 		indexAfterEquals += 2;	
 	}
-	printf("indexAfterEquals %d\n",indexAfterEquals);
+
 	int indexOfComputeInstruction = 3;
 	char compute[GetLengthOfString(code[total_lines])];
 	PopulateArrayForTranslation(code, compute, total_lines, indexAfterEquals, ';');
@@ -215,6 +213,7 @@ void TranslateCInstruction(int total_lines, char* currentBinaryInstruction, char
 	TranslateJump(total_lines, currentBinaryInstruction, code);
 }
 
+
 void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char** code)
 {
 	// move a instruction flag into the first part of the binary instruction
@@ -231,11 +230,11 @@ void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char
 		indexOfChar++;
 	}
 	address[indexOfChar - 1] = '\0';
-				
+
 	/* putting the value into the current instruction
-	* the indexes are at 1 because the A instruction bit is already
-	* at currentBinaryInstruction[0]
-	*/
+	 * the indexes are at 1 because the A instruction bit is already
+	 * at currentBinaryInstruction[0]
+	 */
 	char binaryAddress[17];
 	int newAddress = atoi(address);
 	intToBinary(newAddress, binaryAddress);
@@ -249,63 +248,6 @@ void TranslateAInstruction(int total_lines, char* currentBinaryInstruction, char
 		}
 	}
 	currentBinaryInstruction[16] = '\0';
-}
-
-void intToBinary(int n, char* binary) {
-
-    	if (binary == NULL)
-	{
-		printf("Could not allocate memory to turn intToBinary code\n");
-		exit(1);
-	}
-	
-	// putting the binary representation into a string that looks like this 0000100101010101
-    	int i = 0;
-    	for (int bit = 1 << 15; bit > 0; bit = bit / 2) {
-		if (i > 16)
-		{
-			printf("Error A instruction too large\n");
-			exit(1);
-		}
-		if ((n & bit) != 0) 
-		{
-			binary[i] = '1';
-		} else 
-		{
-			binary[i] = '0';
-		}
-		i++;
-    	}
-    	binary[i] = '\0';
-}
-
-
-int GetLengthOfString(char* string)
-{
-	int length = 0;
-	if (string != NULL)
-	{
-		while (string[length] != '\0')
-		{
-			length++;
-		}
-	}
-	return length;
-}
-int GetLength(char **array)
-{
-	if (array == NULL)
-	{
-		printf("Cannot get length: array equals null\n");
-		exit(1);
-	}
-
-	int length = 0;
-	while(array[length][0] != EOF)
-	{
-		length++;
-	}
-	return length;
 }
 
 // functions that translates
@@ -335,17 +277,14 @@ StringArray TranslateASM(char** code)
 		// only continue if line is NOT empty
 		if (code[total_lines][0] != '\0')
 		{
-			printf("%s\n", code[total_lines]);
 			
 			// if A or B instruction  
 			if(code[total_lines][0] == '@')
 			{
-				printf("A instruction\n");
 				TranslateAInstruction(total_lines, currentBinaryInstruction, code);
 			} 
 			else 
 			{
-				printf("C instruction\n");
 				TranslateCInstruction(total_lines, currentBinaryInstruction, code);
 			}
 
@@ -359,7 +298,6 @@ StringArray TranslateASM(char** code)
 
         		strcpy(binary[total_lines], currentBinaryInstruction);
 		}
-		printf("binary[total_lines] = %s\n\n", binary[total_lines]);
 	}
 
 	StringArray result;

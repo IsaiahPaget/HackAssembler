@@ -1,10 +1,5 @@
 #include "StringArray.h"
 typedef struct {
-	char* asmCode;
-	char* binary;
-} TranslationMap;
-
-typedef struct {
 	char terminator;
 	char semiColon;
 	char equals;

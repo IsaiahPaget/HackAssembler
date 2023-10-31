@@ -6,6 +6,8 @@
 #include "IOHelpers.h"
 #include "AssemblyTranslation.h"
 #include "StringArray.h"
+#include "Helpers.h"
+#include "FirstPassTranslation.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +22,8 @@ int main(int argc, char *argv[])
 	FILE* openedFile = OpenFile(argv[1]);
 
 	StringArray fileContents = ReadFile(openedFile);
+
+	StringArray arr = FindSymbols(fileContents);
 	
 	StringArray code = TranslateASM(fileContents.pContents);
 
@@ -38,6 +42,8 @@ int main(int argc, char *argv[])
 	}
 	free(fileContents.pContents);
 	free(code.pContents);
+
+	printf("Finished\n");
 
 	return 0; 
 }

@@ -3,32 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "IOHelpers.h"
+#include "Helpers.h"
 #include "AssemblyTranslation.h"
 #include "StringArray.h"
 
-int indexOfCharacter(char* string, char character)
-{
-	int index;
-	for (int i = 0; string[i] != character; i++)
-	{
-		if (i > 50)
-		{
-			printf("invalid code length\n");
-			exit(1);
-		}
-		if (string[i] == '\0')
-		{
-			index = -1;
-			return index;
-		}
-		index = i;
-	}
-	return index;	
-}
-
 FILE* OpenFile(char* filePath) 
 {
-	printf("Initiate OpenFile\n");
 	FILE* fptr;
 	fptr = fopen(filePath, "rb");
 
@@ -41,10 +21,8 @@ FILE* OpenFile(char* filePath)
 	return fptr; 
 }
 
-
 FILE* CreateFile(char* filePath) 
 {
-	printf("Initiate CreateFile\n");
 	int index = indexOfCharacter(filePath, '.');
 
 	if (index < 1)
@@ -64,7 +42,6 @@ FILE* CreateFile(char* filePath)
 		exit(1);
 	}
 
-	printf("Finished CreateFile\n");
 	return fptr; 
 }
 
@@ -78,8 +55,6 @@ void WriteFile(FILE* file, StringArray code)
 
 StringArray ReadFile(FILE *file) 
 {
-	printf("Initiate ReadFile\n");
-	
 	char **lines = malloc(sizeof(char *) * MORE_LINES);
 
 	size_t total_lines = 0;
@@ -115,7 +90,7 @@ StringArray ReadFile(FILE *file)
 				{
 					lines[total_lines] = malloc(MORE_CHARS); 
 				}
-				if (c != ' ')
+				if (c != ' ' || c != '	')
 				{
 					// assign character to the current spot in array of strings
 					lines[total_lines][total_chars] = c;

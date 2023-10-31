@@ -6,8 +6,9 @@ This assembler feautures case insensitivity and comments
 
 ### Assembly Code:
 
-```
+```c
 // takes the value in register 1 and the value in register 2 and puts the larger one in register 3
+
 @0
 D=M
 @1
