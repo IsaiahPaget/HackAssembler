@@ -33,48 +33,64 @@ const TranslationMap ARG = {"ARG", "2"};
 const TranslationMap THIS = {"THIS", "3"};
 const TranslationMap THAT = {"THAT", "4"};
 
-void TranslateSymbols(char* address, TranslationMap* labelsAndVariables, int totalSymbolsAndVariables)
+void TranslateSymbols(StringArray code, TranslationMap* labels, int totalLabels, TranslationMap* variables, int totalVariables)
 {
-	TranslationMap symbols[] = {
-		R0,
-		R1,
-		R2,
-		R3,
-		R4,
-		R5,
-		R6,
-		R7,
-		R8,
-		R9,
-		R10,
-		R11,
-		R12,
-		R13,
-		R14,
-		R15,
-		SCREEN,
-		KBD,
-		SP,
-		LCL,
-		ARG,
-		THIS,
-		THAT,
-	};
-
-	int lengthOfTranslationMap = sizeof(symbols) / sizeof(symbols[0]);
-	for (int i = 0; i < lengthOfTranslationMap; i++)
+	for (int currentLine = 0; currentLine < code.length; currentLine++)
 	{
-		if (strcasecmp(address, symbols[i].asmCode) == 0)
+		char* address = code.pContents[currentLine] + 1;
+
+		TranslationMap symbols[] = {
+			R0,
+			R1,
+			R2,
+			R3,
+			R4,
+			R5,
+			R6,
+			R7,
+			R8,
+			R9,
+			R10,
+			R11,
+			R12,
+			R13,
+			R14,
+			R15,
+			SCREEN,
+			KBD,
+			SP,
+			LCL,
+			ARG,
+			THIS,
+			THAT,
+		};
+
+		int lengthOfTranslationMap = sizeof(symbols) / sizeof(symbols[0]);
+
+		for (int i = 0; i < lengthOfTranslationMap; i++)
 		{
-			strcpy(address, symbols[i].binary);
-		}
-		else 
-		{
-			for (int j = 0; j < totalSymbolsAndVariables; j++)
+			if (strcasecmp(address, symbols[i].asmCode) == 0)
 			{
-				if (strcasecmp(address, labelsAndVariables[j].asmCode) == 0)
+				strcpy(address, symbols[i].binary);
+			}
+			else 
+			{
+				for (int j = 0; j < totalLabels; j++)
 				{
-					strcpy(address, labelsAndVariables[j].binary);
+					if (strcasecmp(address, labels[j].asmCode) == 0)
+					{
+						strcpy(address, labels[j].binary);
+					}
+					else 
+					{
+						for (int k = 0; k < totalVariables; k++)
+						{
+							if (strcasecmp(address, variables[k].asmCode) == 0)
+							{
+								strcpy(address, variables[k].binary);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -83,12 +99,13 @@ void TranslateSymbols(char* address, TranslationMap* labelsAndVariables, int tot
 
 StringArray FindSymbols(StringArray lines)
 {
-	TranslationMap* LabelsAndVariables = malloc(sizeof(TranslationMap) * MORE_SYMBOLS);
+	TranslationMap* labels = malloc(sizeof(TranslationMap) * MORE_SYMBOLS);
+	TranslationMap* variables = malloc(sizeof(TranslationMap) * MORE_SYMBOLS);
 	
 	int totalLabels = 0;
 	int indexOfAfterOpenParan = 1;
 	int indexOfClosedParan;
-	int lineVariableIsAt = 16;
+	int amountToDecreaseByForLabels = 0;
 
 	for (int i = 0; i < lines.length; i++)
 	{
@@ -105,32 +122,39 @@ StringArray FindSymbols(StringArray lines)
 			strncpy(label, lines.pContents[i] + indexOfAfterOpenParan, indexOfClosedParan - indexOfAfterOpenParan);
 			label[indexOfClosedParan - indexOfAfterOpenParan] = '\0';
 			
-			char number[8];
-			sprintf(number, "%d", i + 1);
+			char number[8] = {0};
+			sprintf(number, "%d", i - amountToDecreaseByForLabels);
 
-			strcpy(LabelsAndVariables[totalLabels].asmCode, label); 
-			LabelsAndVariables[totalLabels].binary = number;
+			labels[totalLabels].asmCode[0] = '\0';
+			labels[totalLabels].binary[0] = '\0';
 
+			strcpy(labels[totalLabels].binary, number);
+			strcpy(labels[totalLabels].asmCode, label); 
+
+			amountToDecreaseByForLabels++;
 			totalLabels++;
 
 			if (totalLabels % MORE_SYMBOLS == 0)
 			{
 				size_t new_size = totalLabels + MORE_SYMBOLS;
-				LabelsAndVariables = realloc(LabelsAndVariables, sizeof(TranslationMap *) * new_size);
-				if (LabelsAndVariables == NULL) 
+				labels = realloc(labels, sizeof(TranslationMap *) * new_size);
+				if (labels == NULL) 
 				{
 					printf("Could not allocate more memory for LabelsAndVariables\n");
 					exit(1);
 				}
 			}
 		}
-		printf("the instructions first loop: %s\n",lines.pContents[i]);
 	}
 
 	for (int i = 0; i < totalLabels; i++)
 	{
-		printf("labels: %s, %s\n", LabelsAndVariables[i].asmCode, LabelsAndVariables[i].binary);
+		printf("labels after loop: %s, %s\n", labels[i].asmCode, labels[i].binary);
 	}
+
+	
+	int lineVariableIsAt = 16;
+	int totalVariables = 0;
 	
 	for (int i = 0; i < lines.length; i++)
 	{	
@@ -166,70 +190,91 @@ StringArray FindSymbols(StringArray lines)
 					THIS,
 					THAT,
 				};
-				printf("label: %s\n", label);
+				// printf("label: %s\n", label);
 
 				int lengthOfTranslationMap = sizeof(symbols) / sizeof(symbols[0]);
 
-				bool isLabel = false;
+				bool isSymbol = false;
 					
 				for (int indexOfsymbol = 0; indexOfsymbol < lengthOfTranslationMap; indexOfsymbol++)
 				{
-					printf("labels strcmp: %s ?= %s\n", label, symbols[indexOfsymbol].asmCode);
+					//printf("labels strcmp: %s ?= %s\n", label, symbols[indexOfsymbol].asmCode);
 					// check if string is in symbols or a label else add more variables
 					if (strcasecmp(label, symbols[indexOfsymbol].asmCode) == 0)
 					{
-						isLabel = true;
+						isSymbol = true;
 					}
 				}
 
-				if (!isLabel)
+				if (!isSymbol)
 				{
-					printf("totalLabels %d\n", totalLabels);
+					bool isLabel = false;
+					//printf("totalLabels %d\n", totalLabels);
 					for (int indexOfLabel = 0; indexOfLabel < totalLabels; indexOfLabel++)
 					{
-						printf("variables strcmp: %s ?= %s\n", label, LabelsAndVariables[indexOfLabel].asmCode);
-						if (strcasecmp(label, LabelsAndVariables[indexOfLabel].asmCode) != 0)
+						if (strcasecmp(label, labels[indexOfLabel].asmCode) == 0)
 						{
+							isLabel = true;
+						}
+					}
 
+					if (!isLabel)
+					{
+						//printf("it's a variable at line %d\n", i);
+						bool isAlreadyVariable = false;
+
+						for (int indexOfVariable = 0; indexOfVariable < totalVariables; indexOfVariable++)
+						{
+							//printf("%d - variables strcmp: %s ?= %s\n", totalVariables, label, variables[indexOfVariable].asmCode);
+							if (strcasecmp(label, variables[indexOfVariable].asmCode) == 0)
+							{
+								isAlreadyVariable = true;
+							}
+						}
+
+						if (!isAlreadyVariable)
+						{
 							char number[8];
 							sprintf(number, "%d", lineVariableIsAt);
 
 							lineVariableIsAt++;
 
-							strcpy(LabelsAndVariables[totalLabels].asmCode, label); 
-							LabelsAndVariables[totalLabels].binary = number;
+							strcpy(variables[totalVariables].asmCode, label); 
+							strcpy(variables[totalVariables].binary, number);
 
-							totalLabels++;
+							totalVariables++;
 
-							if (totalLabels % MORE_SYMBOLS == 0)
+							if (totalVariables % MORE_SYMBOLS == 0)
 							{
-								size_t new_size = totalLabels + MORE_SYMBOLS;
-								LabelsAndVariables = realloc(LabelsAndVariables, sizeof(TranslationMap *) * new_size);
-								if (LabelsAndVariables == NULL) 
-								{
-									printf("Could not allocate more memory for LabelsAndVariables\n");
-									exit(1);
-								}
+								size_t new_size = totalVariables + MORE_SYMBOLS;
+							 	variables = realloc(variables, sizeof(TranslationMap *) * new_size);
+							 	if (variables == NULL) 
+							 	{
+							 		printf("Could not allocate more memory for LabelsAndVariables\n");
+							 		exit(1);
+							 	}
 							}
 						}
 					}
 				}
-				TranslateSymbols(lines.pContents[i] + 1, LabelsAndVariables, totalLabels);
 			}
 		}
-
-		for (int i = 0; i < totalLabels; i++)
-		{
-			printf("labels: %s, %s\n", LabelsAndVariables[i].asmCode, LabelsAndVariables[i].binary);
-		}
-
-		printf("the instructions second loop: %s\n",lines.pContents[i]);
 	}
+
+	for (int i = 0; i < totalVariables; i++)
+	{
+		printf("variables: %s, %s\n", variables[i].asmCode, variables[i].binary);
+	}
+	
+
+	TranslateSymbols(lines, labels, totalLabels, variables, totalVariables);
+
 
 	StringArray result;
 	result.pContents = lines.pContents;
 	result.length = lines.length;
 
-	free(LabelsAndVariables);
+	free(labels);
+	free(variables);
 	return result;
 }
