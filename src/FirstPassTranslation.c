@@ -1,9 +1,11 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include "StringArray.h"
 #include "TranslationMap.h"
 #include <string.h>
+#include <strings.h>
 #include "FirstPassTranslation.h"
 
 // predefined values
@@ -31,10 +33,8 @@ const TranslationMap ARG = {"ARG", "2"};
 const TranslationMap THIS = {"THIS", "3"};
 const TranslationMap THAT = {"THAT", "4"};
 
-void TranslateSymbols(int total_lines, char* address)
+void TranslateSymbols(char* address, TranslationMap* labelsAndVariables, int totalSymbolsAndVariables)
 {
-	int line_number = total_lines;
-	
 	TranslationMap symbols[] = {
 		R0,
 		R1,
@@ -62,16 +62,23 @@ void TranslateSymbols(int total_lines, char* address)
 	};
 
 	int lengthOfTranslationMap = sizeof(symbols) / sizeof(symbols[0]);
-	int amountOfTimesTheLoopHasLooped;
 	for (int i = 0; i < lengthOfTranslationMap; i++)
 	{
 		if (strcasecmp(address, symbols[i].asmCode) == 0)
 		{
 			strcpy(address, symbols[i].binary);
 		}
-		amountOfTimesTheLoopHasLooped = i;
+		else 
+		{
+			for (int j = 0; j < totalSymbolsAndVariables; j++)
+			{
+				if (strcasecmp(address, labelsAndVariables[j].asmCode) == 0)
+				{
+					strcpy(address, labelsAndVariables[j].binary);
+				}
+			}
+		}
 	}
-	printf("translateSymbols %s\n", address);
 }
 
 StringArray FindSymbols(StringArray lines)
@@ -80,14 +87,14 @@ StringArray FindSymbols(StringArray lines)
 	
 	int totalLabels = 0;
 	int indexOfAfterOpenParan = 1;
-	int lineLabelIsAt;
 	int indexOfClosedParan;
+	int lineVariableIsAt = 16;
+
 	for (int i = 0; i < lines.length; i++)
 	{
 		char label[16] = {0};
 		if (lines.pContents[i][0] == '(')
 		{
-			lineLabelIsAt = i;
 			for (int j = 0; j < strlen(lines.pContents[i]); j++)
 			{
 				if (lines.pContents[i][j] == ')')
@@ -99,7 +106,7 @@ StringArray FindSymbols(StringArray lines)
 			label[indexOfClosedParan - indexOfAfterOpenParan] = '\0';
 			
 			char number[8];
-			sprintf(number, "%d", lineLabelIsAt + 1);
+			sprintf(number, "%d", i + 1);
 
 			strcpy(LabelsAndVariables[totalLabels].asmCode, label); 
 			LabelsAndVariables[totalLabels].binary = number;
@@ -110,9 +117,25 @@ StringArray FindSymbols(StringArray lines)
 			{
 				size_t new_size = totalLabels + MORE_SYMBOLS;
 				LabelsAndVariables = realloc(LabelsAndVariables, sizeof(TranslationMap *) * new_size);
+				if (LabelsAndVariables == NULL) 
+				{
+					printf("Could not allocate more memory for LabelsAndVariables\n");
+					exit(1);
+				}
 			}
 		}
-		else if (lines.pContents[i][0] == '@')
+		printf("the instructions first loop: %s\n",lines.pContents[i]);
+	}
+
+	for (int i = 0; i < totalLabels; i++)
+	{
+		printf("labels: %s, %s\n", LabelsAndVariables[i].asmCode, LabelsAndVariables[i].binary);
+	}
+	
+	for (int i = 0; i < lines.length; i++)
+	{	
+		char label[16] = {0};
+		if (lines.pContents[i][0] == '@')
 		{
 			char charAfterAt = lines.pContents[i][1];
 			if (isalpha(charAfterAt) != 0)
@@ -143,23 +166,70 @@ StringArray FindSymbols(StringArray lines)
 					THIS,
 					THAT,
 				};
+				printf("label: %s\n", label);
 
 				int lengthOfTranslationMap = sizeof(symbols) / sizeof(symbols[0]);
+
+				bool isLabel = false;
+					
 				for (int indexOfsymbol = 0; indexOfsymbol < lengthOfTranslationMap; indexOfsymbol++)
 				{
+					printf("labels strcmp: %s ?= %s\n", label, symbols[indexOfsymbol].asmCode);
 					// check if string is in symbols or a label else add more variables
+					if (strcasecmp(label, symbols[indexOfsymbol].asmCode) == 0)
+					{
+						isLabel = true;
+					}
 				}
+
+				if (!isLabel)
+				{
+					printf("totalLabels %d\n", totalLabels);
+					for (int indexOfLabel = 0; indexOfLabel < totalLabels; indexOfLabel++)
+					{
+						printf("variables strcmp: %s ?= %s\n", label, LabelsAndVariables[indexOfLabel].asmCode);
+						if (strcasecmp(label, LabelsAndVariables[indexOfLabel].asmCode) != 0)
+						{
+
+							char number[8];
+							sprintf(number, "%d", lineVariableIsAt);
+
+							lineVariableIsAt++;
+
+							strcpy(LabelsAndVariables[totalLabels].asmCode, label); 
+							LabelsAndVariables[totalLabels].binary = number;
+
+							totalLabels++;
+
+							if (totalLabels % MORE_SYMBOLS == 0)
+							{
+								size_t new_size = totalLabels + MORE_SYMBOLS;
+								LabelsAndVariables = realloc(LabelsAndVariables, sizeof(TranslationMap *) * new_size);
+								if (LabelsAndVariables == NULL) 
+								{
+									printf("Could not allocate more memory for LabelsAndVariables\n");
+									exit(1);
+								}
+							}
+						}
+					}
+				}
+				TranslateSymbols(lines.pContents[i] + 1, LabelsAndVariables, totalLabels);
 			}
 		}
-	}
 
-	for (int i = 0; i < totalLabels; i++)
-	{
-		printf("labels and variables: asm %s binary %s\n",LabelsAndVariables[i].asmCode, LabelsAndVariables[i].binary);
+		for (int i = 0; i < totalLabels; i++)
+		{
+			printf("labels: %s, %s\n", LabelsAndVariables[i].asmCode, LabelsAndVariables[i].binary);
+		}
+
+		printf("the instructions second loop: %s\n",lines.pContents[i]);
 	}
 
 	StringArray result;
 	result.pContents = lines.pContents;
 	result.length = lines.length;
+
+	free(LabelsAndVariables);
 	return result;
 }

@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
 
 	StringArray fileContents = ReadFile(openedFile);
 
-	StringArray arr = FindSymbols(fileContents);
+	StringArray parsedForLabelsAndVariables = FindSymbols(fileContents);
 	
-	StringArray code = TranslateASM(fileContents.pContents);
+	StringArray code = TranslateASM(parsedForLabelsAndVariables.pContents);
 
 	FILE* createdFile = CreateFile(argv[1]);
 	WriteFile(createdFile, code);

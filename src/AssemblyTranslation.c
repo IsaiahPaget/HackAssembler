@@ -283,7 +283,11 @@ StringArray TranslateASM(char** code)
 			{
 				TranslateAInstruction(total_lines, currentBinaryInstruction, code);
 			} 
-			else 
+			else if(code[total_lines][0] == '(') 
+			{
+				strcpy(currentBinaryInstruction, "\0");
+			}
+			else
 			{
 				TranslateCInstruction(total_lines, currentBinaryInstruction, code);
 			}

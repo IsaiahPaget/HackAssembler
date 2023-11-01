@@ -49,7 +49,14 @@ void WriteFile(FILE* file, StringArray code)
 {
 	for (int i = 0; i < code.length; i++)
 	{
-		fprintf(file, "%s\n", code.pContents[i]);
+		if (strcmp(code.pContents[i], "\0") == 0)
+		{
+			fprintf(file, "%s", code.pContents[i]);
+		} 
+		else 
+		{
+			fprintf(file, "%s\n", code.pContents[i]);
+		}
 	}
 }
 
@@ -90,7 +97,7 @@ StringArray ReadFile(FILE *file)
 				{
 					lines[total_lines] = malloc(MORE_CHARS); 
 				}
-				if (c != ' ' || c != '	')
+				if (c != ' ' && c != '\t')
 				{
 					// assign character to the current spot in array of strings
 					lines[total_lines][total_chars] = c;
