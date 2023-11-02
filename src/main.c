@@ -11,7 +11,6 @@
 
 int main(int argc, char *argv[])
 {
-
 	// Make sure user enters correct number of arguments
 	if (argc != 2)
 	{
@@ -40,8 +39,6 @@ int main(int argc, char *argv[])
 		free(fileContents.pContents[i]);
 		free(code.pContents[i]);
 	}
-	free(fileContents.pContents);
-	free(code.pContents);
 
 	printf("Finished\n");
 
