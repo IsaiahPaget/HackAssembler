@@ -1,8 +1,6 @@
 # HackAssembler
 
-This is an assembler for the Hack assembly language from the course Nand2Tetris part one.
-
-This assembler feautures case insensitivity and comments
+This is an assembler for the Hack assembly language from the course Nand2Tetris part one. It targets a 16 bit machine that I built using HDL through the whole course [IsaiahPaget/Nand2Tetris](https://github.com/isaiahpaget/nand2tetris).
 
 ### Assembly Code:
 
@@ -10,7 +8,7 @@ This assembler feautures case insensitivity and comments
 // Draws a rectangle at the top-left corner of the screen.
 // The rectangle is 16 pixels wide and R0 pixels high.
 
-   0
+   @0
    D=M
    @INFINITE_LOOP
    D;JLE 
@@ -42,7 +40,7 @@ This assembler feautures case insensitivity and comments
 ### Output:
 
 ```
-1110101010000000
+0000000000000000
 1111110000010000
 0000000000010111
 1110001100000110
